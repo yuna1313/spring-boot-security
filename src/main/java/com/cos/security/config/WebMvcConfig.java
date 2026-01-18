@@ -1,6 +1,6 @@
 package com.cos.security.config;
 
-import org.springframework.boot.mustache.servlet.view.MustacheViewResolver;
+import org.springframework.boot.web.servlet.view.MustacheViewResolver;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
