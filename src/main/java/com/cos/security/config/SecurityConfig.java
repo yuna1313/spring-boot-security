@@ -35,7 +35,10 @@ public class SecurityConfig {
                         .loginPage("/loginForm")
                         .loginProcessingUrl("/login")
                         // 로그인 성공 시 기본적으로 "/"로 이동하며, 인증이 필요한 특정 URL에서 접근한 경우 해당 URL로 리다이렉트
-                        .defaultSuccessUrl("/"));
+                        .defaultSuccessUrl("/"))
+                .oauth2Login(oauth2 -> oauth2
+                        // 구글 로그인이 완료된 뒤에 후처리가 필요
+                        .loginPage("/loginForm"));
         return http.build();
     }
 }
