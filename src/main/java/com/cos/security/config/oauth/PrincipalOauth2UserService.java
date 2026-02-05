@@ -1,6 +1,8 @@
 package com.cos.security.config.oauth;
 
 import com.cos.security.config.auth.PrincipalDetails;
+import com.cos.security.config.oauth.provider.GoogleUserInfo;
+import com.cos.security.config.oauth.provider.OAuth2UserInfo;
 import com.cos.security.model.User;
 import com.cos.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +35,23 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         // userRequest 정보 (loadUser 함수를 호출하여 구글로부터 회원 프로필 정보 받아옴)
         log.info("getAttributes: {}", oAuth2User.getAttributes());
 
-        String provider = userRequest.getClientRegistration().getClientId();
-        String providerId = oAuth2User.getAttribute("sub");
+        /**
+         * 회원 정보 존재하면 로그인
+         * 회원 정보 미존재하면 회원가입 진행
+         */
+        OAuth2UserInfo oAuth2UserInfo = null;
+        if(userRequest.getClientRegistration().getRegistrationId().equals("google")) {
+            log.info("구글 로그인 요청");
+            oAuth2UserInfo = new GoogleUserInfo(oAuth2User.getAttributes());
+        } else {
+            log.info("지원하지 않는 간편인증");
+        }
+
+        String provider = oAuth2UserInfo.getProvider();
+        String providerId = oAuth2UserInfo.getProviderId();
         String username = provider + "_" + providerId;
         String password = bCryptPasswordEncoder.encode("겟인데어");
-        String email = oAuth2User.getAttribute("email");
+        String email = oAuth2UserInfo.getEmail();
         String role = "ROLE_USER";
 
         User userEntity = userRepository.findByUsername(username);
@@ -51,6 +65,8 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
                     .providerId(providerId)
                     .build();
             userRepository.save(userEntity);
+        } else {
+            log.info("로그인을 이미 한 적이 있습니다.");
         }
 
         return new PrincipalDetails(userEntity, oAuth2User.getAttributes());
