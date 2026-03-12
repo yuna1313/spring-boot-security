@@ -2,6 +2,7 @@ package com.cos.security.config.oauth;
 
 import com.cos.security.config.auth.PrincipalDetails;
 import com.cos.security.config.oauth.provider.GoogleUserInfo;
+import com.cos.security.config.oauth.provider.NaverUserInfo;
 import com.cos.security.config.oauth.provider.OAuth2UserInfo;
 import com.cos.security.model.User;
 import com.cos.security.repository.UserRepository;
@@ -13,6 +14,8 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -43,6 +46,9 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         if(userRequest.getClientRegistration().getRegistrationId().equals("google")) {
             log.info("구글 로그인 요청");
             oAuth2UserInfo = new GoogleUserInfo(oAuth2User.getAttributes());
+        } else if(userRequest.getClientRegistration().getRegistrationId().equals("naver")) {
+            log.info("네이버 로그인 요청");
+            oAuth2UserInfo = new NaverUserInfo((Map)oAuth2User.getAttributes().get("response"));
         } else {
             log.info("지원하지 않는 간편인증");
         }
@@ -56,6 +62,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 
         User userEntity = userRepository.findByUsername(username);
         if(userEntity == null) {
+            log.info("처음 로그인을 시도하였습니다.");
             userEntity = User.builder()
                     .username(username)
                     .password(password)
